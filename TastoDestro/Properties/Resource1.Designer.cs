@@ -86,5 +86,14 @@ namespace TastoDestro.Properties {
                 return ResourceManager.GetString("TableRegEx2", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to \[[^\]]*\]*.&apos;*.&apos;*.\[*.\].
+        /// </summary>
+        internal static string TableRegEx3 {
+            get {
+                return ResourceManager.GetString("TableRegEx3", resourceCulture);
+            }
+        }
     }
 }

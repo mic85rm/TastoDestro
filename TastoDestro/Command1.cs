@@ -89,8 +89,11 @@ namespace TastoDestro
     private void Execute(object sender, EventArgs e)
     {
       ThreadHelper.ThrowIfNotOnUIThread();
-      string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
-      string title = "Command1";
+      //string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
+      //string title = "Command1";
+
+      string message = "Ti ringrazio per la fiducia!";
+      string title = "MICHELE SSMS18 TOOLS";
 
       // Show a message box to prove we were here
       VsShellUtilities.ShowMessageBox(

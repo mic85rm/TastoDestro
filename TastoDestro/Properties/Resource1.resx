@@ -126,4 +126,7 @@
   <data name="TableRegEx2" xml:space="preserve">
     <value>([A-Z])\w+</value>
   </data>
+  <data name="TableRegEx3" xml:space="preserve">
+    <value>\[[^\]]*\]*.'*.'*.\[*.\]</value>
+  </data>
 </root>

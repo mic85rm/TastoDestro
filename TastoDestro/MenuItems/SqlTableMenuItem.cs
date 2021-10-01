@@ -22,15 +22,14 @@ namespace TastoDestro.MenuItems
     private Regex tableRegex = null;
     enum DBTBLSCHEMA
     {
-      TABELLA = 9,
-      SCHEMA = 12,
-      DATABASE = 6
+      TABELLAeSCHEMA = 2,
+      DATABASE = 1
     }
     public SqlTableMenuItem(DTE2 applicationObject)
     {
       this.applicationObject = applicationObject;
       this.dteController = new DTEApplicationController();
-      this.tableRegex = new Regex(Properties.Resource1.TableRegEx2);
+      this.tableRegex = new Regex(Properties.Resource1.TableRegEx3);
     }
 
     public override object Clone()
@@ -62,26 +61,46 @@ namespace TastoDestro.MenuItems
 
 
       //Match match = Regex.Match(this.Parent.Context, Properties.Resource1.TableRegEx);
-      MatchCollection match = Regex.Matches(this.Parent.Context, Properties.Resource1.TableRegEx2, RegexOptions.IgnoreCase);
-      if ((match != null) && (match.Count == 13))
+      MatchCollection match = Regex.Matches(this.Parent.Context, Properties.Resource1.TableRegEx3, RegexOptions.IgnoreCase);
+      if ((match != null) && (match.Count == 3))
       {
-
-        string tableName = match[(int)DBTBLSCHEMA.TABELLA].Value;
-        string schema = match[(int)DBTBLSCHEMA.SCHEMA].Value;
-        string database = match[(int)DBTBLSCHEMA.DATABASE].Value;
+        string tableName = match[(int)DBTBLSCHEMA.TABELLAeSCHEMA].Value.Split(new string[] { "'" }, StringSplitOptions.None)[1];
+        string schema = match[(int)DBTBLSCHEMA.TABELLAeSCHEMA].Value.Split(new string[] { "'" }, StringSplitOptions.None)[3];
+        string database = match[(int)DBTBLSCHEMA.DATABASE].Value.Split(new string[] { "'" }, StringSplitOptions.None)[1];
 
 
         string connectionString = this.Parent.Connection.ConnectionString + ";Database=" + database;
 
-        SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLSELECT, schema, tableName));
-        command.Connection = new SqlConnection(connectionString);
-        command.Connection.Open();
 
-        SqlDataAdapter adapter = new SqlDataAdapter(command);
+        //command.Connection = new SqlConnection(connectionString);
+        //command.Connection.Open();
+
+
         DataTable table = new DataTable();
-        adapter.Fill(table);
 
-        command.Connection.Close();
+
+        //command.Connection.Close();
+
+        try
+        {
+          using (SqlConnection connection = new SqlConnection(connectionString))
+          {
+            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLSELECT, schema, tableName), connection);
+            SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+
+
+            adapter.Fill(table);
+
+          }
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
+        }
+
+
+
 
         StringBuilder buffer = new StringBuilder();
 
