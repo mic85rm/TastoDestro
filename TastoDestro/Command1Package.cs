@@ -41,9 +41,14 @@ namespace TastoDestro
   /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
   /// </para>
   /// </remarks>
+  /// 
+  [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
   [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+  [ProvideService(typeof(Command1), IsAsyncQueryable = true)]
   [ProvideMenuResource("Menus.ctmenu", 1)]
   [Guid(Command1Package.PackageGuidString)]
+
+
   [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
   public sealed class Command1Package : AsyncPackage
   {
@@ -83,6 +88,7 @@ namespace TastoDestro
     {
       // When initialized asynchronously, the current thread may be a background thread at this point.
       // Do any initialization that requires the UI thread after switching to the UI thread.
+      await base.InitializeAsync(cancellationToken, progress);
       await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
@@ -112,7 +118,7 @@ namespace TastoDestro
         objectExplorer.GetSelectedNodes(out nodeCount, out nodes);
         node = nodeCount > 0 ? nodes[0] : null;
 
-        if ((node != null) && (node.Parent != null) && (node.InvariantName!= "SystemTables"))
+        if ((node != null) && (node.Parent != null) && (node.InvariantName != "SystemTables"))
         {
           if (node.Parent.InvariantName == "UserTables")
           {

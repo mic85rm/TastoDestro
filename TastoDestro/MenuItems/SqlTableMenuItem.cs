@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TastoDestro.Controller;
+using Microsoft.VisualStudio.Shell;
 
 namespace TastoDestro.MenuItems
 {
@@ -124,6 +125,7 @@ namespace TastoDestro.MenuItems
         }
 
         // create new document
+        ThreadHelper.ThrowIfNotOnUIThread();
         this.dteController.CreateNewScriptWindow(buffer);
       }
     }
