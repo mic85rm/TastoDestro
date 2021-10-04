@@ -61,11 +61,38 @@ namespace TastoDestro.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT  STUFF(( SELECT &apos;,&apos; + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos; FOR XML PATH(&apos;&apos;)), 1, 1, &apos;&apos;).
+        /// </summary>
+        internal static string SQLCOLONNE {
+            get {
+                return ResourceManager.GetString("SQLCOLONNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SELECT CASE OBJECTPROPERTY(OBJECT_ID(&apos;{0}&apos;), &apos;TableHasIdentity&apos;)WHEN 1 THEN &apos;1&apos; ELSE &apos;0&apos; END.
+        /// </summary>
+        internal static string SQLIDENTITTY {
+            get {
+                return ResourceManager.GetString("SQLIDENTITTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT * FROM [{0}].[{1}].
         /// </summary>
         internal static string SQLSELECT {
             get {
                 return ResourceManager.GetString("SQLSELECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SELECT a.COLUMN_NAME as NOMECOLONNA,a.DATA_TYPE TIPOCOLONNA FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos;.
+        /// </summary>
+        internal static string SQLTIPICOLONNE {
+            get {
+                return ResourceManager.GetString("SQLTIPICOLONNE", resourceCulture);
             }
         }
         

@@ -117,8 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="SQLCOLONNE" xml:space="preserve">
+    <value>SELECT  STUFF(( SELECT ',' + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = '{0}' FOR XML PATH('')), 1, 1, '')</value>
+  </data>
+  <data name="SQLIDENTITTY" xml:space="preserve">
+    <value>SELECT CASE OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity')WHEN 1 THEN '1' ELSE '0' END</value>
+  </data>
   <data name="SQLSELECT" xml:space="preserve">
     <value>SELECT * FROM [{0}].[{1}]</value>
+  </data>
+  <data name="SQLTIPICOLONNE" xml:space="preserve">
+    <value>SELECT a.COLUMN_NAME as NOMECOLONNA,a.DATA_TYPE TIPOCOLONNA FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = '{0}'</value>
   </data>
   <data name="TableRegEx" xml:space="preserve">
     <value>^Server\[[^\]]*\]/Database\[[^\]]*\]/Table\[[^\]]*\]$</value>

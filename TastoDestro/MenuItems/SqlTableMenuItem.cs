@@ -55,10 +55,13 @@ namespace TastoDestro.MenuItems
 
     private void InsertItem_Click(object sender, EventArgs e)
     {
+      ThreadHelper.ThrowIfNotOnUIThread();
       ToolStripMenuItem item = (ToolStripMenuItem)sender;
-      bool generateColumnNames = (bool)item.Tag;
-
-
+      //bool generateColumnNames = (bool)item.Tag;
+      string risultato = string.Empty;
+      DataTable DT = new DataTable();
+      DataTable table = new DataTable();
+      DataTable DTtipi = new DataTable();
 
       //Match match = Regex.Match(this.Parent.Context, Properties.Resource1.TableRegEx);
       MatchCollection match = Regex.Matches(this.Parent.Context, Properties.Resource1.TableRegEx3, RegexOptions.IgnoreCase);
@@ -72,19 +75,72 @@ namespace TastoDestro.MenuItems
         string connectionString = this.Parent.Connection.ConnectionString + ";Database=" + database;
 
 
-        //command.Connection = new SqlConnection(connectionString);
-        //command.Connection.Open();
 
-
-        DataTable table = new DataTable();
-
-
-        //command.Connection.Close();
 
         try
         {
           using (SqlConnection connection = new SqlConnection(connectionString))
           {
+            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLTIPICOLONNE, tableName), connection);
+            SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+
+
+            adapter.Fill(DTtipi);
+          }
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
+        }
+
+
+
+
+        try
+        {
+          using (SqlConnection connection = new SqlConnection(connectionString))
+          {
+            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLCOLONNE, tableName), connection);
+            SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+
+
+            adapter.Fill(DT);
+          }
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
+        }
+
+
+
+
+
+        try
+        {
+          using (SqlConnection connection = new SqlConnection(connectionString))
+          {
+            SqlCommand command1 = new SqlCommand(string.Format(Properties.Resource1.SQLIDENTITTY, tableName), connection);
+            command1.Connection.Open();
+            risultato = (string)command1.ExecuteScalar();
+          }
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
+        }
+
+
+        try
+        {
+          using (SqlConnection connection = new SqlConnection(connectionString))
+          {
+
+
+
+
             SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLSELECT, schema, tableName), connection);
             SqlDataAdapter adapter = new SqlDataAdapter(command);
 
@@ -99,26 +155,24 @@ namespace TastoDestro.MenuItems
           MessageBox.Show(ex.Message);
         }
 
-
-
-
         StringBuilder buffer = new StringBuilder();
 
         // generate INSERT prefix
         StringBuilder prefix = new StringBuilder();
-        if (generateColumnNames)
+        buffer.AppendFormat("USE [{0}] ", database, Environment.NewLine);
+        buffer.Append(Environment.NewLine);
+        buffer.AppendFormat("GO", Environment.NewLine);
+        buffer.Append(Environment.NewLine);
+        if (risultato == "1")
         {
-          prefix.AppendFormat("INSERT INTO {0} (", tableName);
-          for (int i = 0; i < table.Columns.Count; i++)
-          {
-            if (i > 0) prefix.Append(", ");
-            prefix.AppendFormat("[{0}]", table.Columns[i].ColumnName);
-          }
-          prefix.Append(") VALUES (");
+          buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] ON ", schema, tableName, Environment.NewLine);
+          buffer.Append(Environment.NewLine);
+          buffer.AppendFormat("GO", Environment.NewLine);
+          buffer.Append(Environment.NewLine);
         }
-        else
-          prefix.AppendFormat("INSERT INTO {0} VALUES (", tableName);
 
+
+        prefix.AppendFormat("INSERT [{0}].[{1}] ({2}) VALUES (", schema, tableName, DT.Rows[0][0].ToString());
         // generate INSERT statements
         foreach (DataRow row in table.Rows)
         {
@@ -129,22 +183,40 @@ namespace TastoDestro.MenuItems
 
             if (row.IsNull(i)) values.Append("NULL");
             else if (table.Columns[i].DataType == typeof(int) ||
-                table.Columns[i].DataType == typeof(decimal) ||
                 table.Columns[i].DataType == typeof(long) ||
                 table.Columns[i].DataType == typeof(double) ||
                 table.Columns[i].DataType == typeof(float) ||
                 table.Columns[i].DataType == typeof(byte))
               values.Append(row[i].ToString());
+            else if (table.Columns[i].DataType == typeof(decimal))
+              values.Append(row[i].ToString().Replace(",", "."));
             else
-              values.AppendFormat("'{0}'", row[i].ToString());
+              if (DTtipi.Rows[i][1].ToString() == "varchar" || DTtipi.Rows[i][1].ToString() == "char" || DTtipi.Rows[i][1].ToString() == "text")
+            {
+              values.AppendFormat("N'{0}'", row[i].ToString().Replace("'", "''"));
+            }
+            else
+            {
+              values.AppendFormat("'{0}'", row[i].ToString().Replace("'", "''"));
+            }
           }
           values.AppendFormat(")");
 
           buffer.AppendLine(prefix.ToString() + values.ToString());
+          buffer.AppendFormat("GO", Environment.NewLine);
+          buffer.Append(Environment.NewLine);
+        }
+        prefix.AppendFormat("GO", Environment.NewLine);
+        prefix.Append(Environment.NewLine);
+        if (risultato == "1")
+        {
+          buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] OFF ", schema, tableName, Environment.NewLine);
+          buffer.Append(Environment.NewLine);
+          buffer.AppendFormat("GO", Environment.NewLine);
         }
 
         // create new document
-        ThreadHelper.ThrowIfNotOnUIThread();
+
         this.dteController.CreateNewScriptWindow(buffer);
       }
     }
