@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TastoDestro.MenuItems;
+using static Microsoft.VisualStudio.VSConstants;
 using static System.Net.Mime.MediaTypeNames;
 using Task = System.Threading.Tasks.Task;
 
@@ -97,14 +98,26 @@ namespace TastoDestro
       {
         ContextService contextService = (ContextService)ServiceCache.ServiceProvider.GetService(typeof(IContextService)) ?? throw new ArgumentNullException(nameof(IContextService));
         contextService.ActionContext.CurrentContextChanged += ActionContextOnCurrentContextChanged;
+        DTE2 dte = Package.GetGlobalService(typeof(DTE)) as DTE2;
+        dte.Events.DocumentEvents.DocumentClosing += DocumentEvents_DocumentClosing;
       }
       catch (Exception ex)
       {
         MessageBox.Show(ex.Message);
       }
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
+
       await Command1.InitializeAsync(this);
     }
+
+
+
+    private void DocumentEvents_DocumentClosing(Document Document)
+    {
+      MessageBox.Show("ciao");
+    }
+
+
     private void ActionContextOnCurrentContextChanged(object sender, EventArgs e)
     {
       ThreadHelper.ThrowIfNotOnUIThread();
@@ -148,6 +161,15 @@ namespace TastoDestro
         MessageBox.Show(ObjectExplorerContextException.Message);
       }
     }
+
+
+
+    protected override int QueryClose(out bool pfCanClose)
+    {
+      pfCanClose = true;
+      return VSConstants.S_OK;
+    }
+
     #endregion
   }
 }

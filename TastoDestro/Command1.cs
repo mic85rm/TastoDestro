@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
@@ -103,6 +104,9 @@ namespace TastoDestro
           OLEMSGICON.OLEMSGICON_INFO,
           OLEMSGBUTTON.OLEMSGBUTTON_OK,
           OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+
+
+
     }
   }
 }
