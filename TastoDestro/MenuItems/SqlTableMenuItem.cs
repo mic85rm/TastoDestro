@@ -62,6 +62,7 @@ namespace TastoDestro.MenuItems
       DataTable DT = new DataTable();
       DataTable table = new DataTable();
       DataTable DTtipi = new DataTable();
+      DataSet dataSet = new DataSet();
 
       //Match match = Regex.Match(this.Parent.Context, Properties.Resource1.TableRegEx);
       MatchCollection match = Regex.Matches(this.Parent.Context, Properties.Resource1.TableRegEx3, RegexOptions.IgnoreCase);
@@ -74,19 +75,16 @@ namespace TastoDestro.MenuItems
 
         string connectionString = this.Parent.Connection.ConnectionString + ";Database=" + database;
 
-
-
-
         try
         {
           using (SqlConnection connection = new SqlConnection(connectionString))
           {
-            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLTIPICOLONNE, tableName), connection);
+            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLCOMPLETA, tableName, schema), connection);
             SqlDataAdapter adapter = new SqlDataAdapter(command);
 
 
 
-            adapter.Fill(DTtipi);
+            adapter.Fill(dataSet);
           }
         }
         catch (Exception ex)
@@ -94,130 +92,76 @@ namespace TastoDestro.MenuItems
           MessageBox.Show(ex.Message);
         }
 
-
-
-
-        try
+        if (dataSet.Tables[2].Rows.Count > 0)
         {
-          using (SqlConnection connection = new SqlConnection(connectionString))
-          {
-            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLCOLONNE, tableName), connection);
-            SqlDataAdapter adapter = new SqlDataAdapter(command);
+          StringBuilder buffer = new StringBuilder();
 
-
-
-            adapter.Fill(DT);
-          }
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-
-
-
-
-
-        try
-        {
-          using (SqlConnection connection = new SqlConnection(connectionString))
-          {
-            SqlCommand command1 = new SqlCommand(string.Format(Properties.Resource1.SQLIDENTITTY, tableName), connection);
-            command1.Connection.Open();
-            risultato = (string)command1.ExecuteScalar();
-          }
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-
-
-        try
-        {
-          using (SqlConnection connection = new SqlConnection(connectionString))
-          {
-
-
-
-
-            SqlCommand command = new SqlCommand(string.Format(Properties.Resource1.SQLSELECT, schema, tableName), connection);
-            SqlDataAdapter adapter = new SqlDataAdapter(command);
-
-
-
-            adapter.Fill(table);
-
-          }
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-
-        StringBuilder buffer = new StringBuilder();
-
-        // generate INSERT prefix
-        StringBuilder prefix = new StringBuilder();
-        buffer.AppendFormat("USE [{0}] ", database, Environment.NewLine);
-        buffer.Append(Environment.NewLine);
-        buffer.AppendFormat("GO", Environment.NewLine);
-        buffer.Append(Environment.NewLine);
-        if (risultato == "1")
-        {
-          buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] ON ", schema, tableName, Environment.NewLine);
+          // generate INSERT prefix
+          StringBuilder prefix = new StringBuilder();
+          buffer.AppendFormat("USE [{0}] ", database, Environment.NewLine);
           buffer.Append(Environment.NewLine);
           buffer.AppendFormat("GO", Environment.NewLine);
           buffer.Append(Environment.NewLine);
-        }
-
-
-        prefix.AppendFormat("INSERT [{0}].[{1}] ({2}) VALUES (", schema, tableName, DT.Rows[0][0].ToString());
-        // generate INSERT statements
-        foreach (DataRow row in table.Rows)
-        {
-          StringBuilder values = new StringBuilder();
-          for (int i = 0; i < table.Columns.Count; i++)
+          if (dataSet.Tables[1].Rows[0][0].ToString() == "1")
           {
-            if (i > 0) values.Append(", ");
+            buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] ON ", schema, tableName, Environment.NewLine);
+            buffer.Append(Environment.NewLine);
+            buffer.AppendFormat("GO", Environment.NewLine);
+            buffer.Append(Environment.NewLine);
+          }
 
-            if (row.IsNull(i)) values.Append("NULL");
-            else if (table.Columns[i].DataType == typeof(int) ||
-                table.Columns[i].DataType == typeof(long) ||
-                table.Columns[i].DataType == typeof(double) ||
-                table.Columns[i].DataType == typeof(float) ||
-                table.Columns[i].DataType == typeof(byte))
-              values.Append(row[i].ToString());
-            else if (table.Columns[i].DataType == typeof(decimal))
-              values.Append(row[i].ToString().Replace(",", "."));
-            else
-              if (DTtipi.Rows[i][1].ToString() == "varchar" || DTtipi.Rows[i][1].ToString() == "char" || DTtipi.Rows[i][1].ToString() == "text")
+
+          prefix.AppendFormat("INSERT [{0}].[{1}] ({2}) VALUES (", schema, tableName, dataSet.Tables[0].Rows[0][0].ToString());
+          // generate INSERT statements
+          foreach (DataRow row in dataSet.Tables[2].Rows)
+          {
+            StringBuilder values = new StringBuilder();
+            for (int i = 0; i < dataSet.Tables[2].Columns.Count; i++)
             {
-              values.AppendFormat("N'{0}'", row[i].ToString().Replace("'", "''"));
+              if (i > 0) values.Append(", ");
+
+              if (row.IsNull(i)) values.Append("NULL");
+              else if (dataSet.Tables[2].Columns[i].DataType == typeof(int) ||
+                  dataSet.Tables[2].Columns[i].DataType == typeof(long) ||
+                  dataSet.Tables[2].Columns[i].DataType == typeof(double) ||
+                  dataSet.Tables[2].Columns[i].DataType == typeof(float) ||
+                  dataSet.Tables[2].Columns[i].DataType == typeof(byte))
+                values.Append(row[i].ToString());
+              else if (dataSet.Tables[2].Columns[i].DataType == typeof(decimal))
+                values.Append(row[i].ToString().Replace(",", "."));
+              else
+                if (dataSet.Tables[3].Rows[i][1].ToString() == "varchar" || dataSet.Tables[3].Rows[i][1].ToString() == "char" || dataSet.Tables[3].Rows[i][1].ToString() == "text")
+              {
+                values.AppendFormat("N'{0}'", row[i].ToString().Replace("'", "''"));
+              }
+              else
+              {
+                values.AppendFormat("'{0}'", row[i].ToString().Replace("'", "''"));
+              }
             }
-            else
-            {
-              values.AppendFormat("'{0}'", row[i].ToString().Replace("'", "''"));
-            }
+            values.AppendFormat(")");
+
+            buffer.AppendLine(prefix.ToString() + values.ToString());
+            buffer.AppendFormat("GO", Environment.NewLine);
+            buffer.Append(Environment.NewLine);
           }
-          values.AppendFormat(")");
+          prefix.AppendFormat("GO", Environment.NewLine);
+          prefix.Append(Environment.NewLine);
+          if (dataSet.Tables[1].Rows[0][0].ToString() == "1")
+          {
+            buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] OFF ", schema, tableName, Environment.NewLine);
+            buffer.Append(Environment.NewLine);
+            buffer.AppendFormat("GO", Environment.NewLine);
+          }
 
-          buffer.AppendLine(prefix.ToString() + values.ToString());
-          buffer.AppendFormat("GO", Environment.NewLine);
-          buffer.Append(Environment.NewLine);
+          // create new document
+
+          this.dteController.CreateNewScriptWindow(buffer);
         }
-        prefix.AppendFormat("GO", Environment.NewLine);
-        prefix.Append(Environment.NewLine);
-        if (risultato == "1")
+        else
         {
-          buffer.AppendFormat("SET IDENTITY_INSERT [{0}].[{1}] OFF ", schema, tableName, Environment.NewLine);
-          buffer.Append(Environment.NewLine);
-          buffer.AppendFormat("GO", Environment.NewLine);
+          MessageBox.Show("Non ci sono dati in questa tabella");
         }
-
-        // create new document
-
-        this.dteController.CreateNewScriptWindow(buffer);
       }
     }
   }

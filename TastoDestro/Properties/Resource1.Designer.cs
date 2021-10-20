@@ -70,6 +70,18 @@ namespace TastoDestro.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT  STUFF(( SELECT &apos;,&apos; + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos; FOR XML PATH(&apos;&apos;)), 1, 1, &apos;&apos;);
+        ///SELECT CASE OBJECTPROPERTY(OBJECT_ID(&apos;{0}&apos;), &apos;TableHasIdentity&apos;)WHEN 1 THEN &apos;1&apos; ELSE &apos;0&apos; END;
+        ///SELECT * FROM [{1}].[{0}];
+        ///SELECT a.COLUMN_NAME as NOMECOLONNA,a.DATA_TYPE TIPOCOLONNA FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos;;.
+        /// </summary>
+        internal static string SQLCOMPLETA {
+            get {
+                return ResourceManager.GetString("SQLCOMPLETA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT CASE OBJECTPROPERTY(OBJECT_ID(&apos;{0}&apos;), &apos;TableHasIdentity&apos;)WHEN 1 THEN &apos;1&apos; ELSE &apos;0&apos; END.
         /// </summary>
         internal static string SQLIDENTITTY {

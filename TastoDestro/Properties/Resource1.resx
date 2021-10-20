@@ -120,6 +120,12 @@
   <data name="SQLCOLONNE" xml:space="preserve">
     <value>SELECT  STUFF(( SELECT ',' + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = '{0}' FOR XML PATH('')), 1, 1, '')</value>
   </data>
+  <data name="SQLCOMPLETA" xml:space="preserve">
+    <value>SELECT  STUFF(( SELECT ',' + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = '{0}' FOR XML PATH('')), 1, 1, '');
+SELECT CASE OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity')WHEN 1 THEN '1' ELSE '0' END;
+SELECT * FROM [{1}].[{0}];
+SELECT a.COLUMN_NAME as NOMECOLONNA,a.DATA_TYPE TIPOCOLONNA FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = '{0}';</value>
+  </data>
   <data name="SQLIDENTITTY" xml:space="preserve">
     <value>SELECT CASE OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity')WHEN 1 THEN '1' ELSE '0' END</value>
   </data>
