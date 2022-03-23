@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using TastoDestro.Helper;
 
 namespace TastoDestro
 {
@@ -46,19 +47,23 @@ namespace TastoDestro
       commandService.AddCommand(menuItem);
     }
 
-    /// <summary>
-    /// Gets the instance of the command.
-    /// </summary>
-    public static Command1 Instance
+
+
+        /// <summary>
+        /// Gets the instance of the command.
+        /// </summary>
+        public static Command1 Instance
     {
       get;
       private set;
     }
 
-    /// <summary>
-    /// Gets the service provider from the owner package.
-    /// </summary>
-    private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
+
+
+        /// <summary>
+        /// Gets the service provider from the owner package.
+        /// </summary>
+        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
     {
       get
       {
@@ -66,11 +71,13 @@ namespace TastoDestro
       }
     }
 
-    /// <summary>
-    /// Initializes the singleton instance of the command.
-    /// </summary>
-    /// <param name="package">Owner package, not null.</param>
-    public static async Task InitializeAsync(AsyncPackage package)
+  
+
+        /// <summary>
+        /// Initializes the singleton instance of the command.
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        public static async Task InitializeAsync(AsyncPackage package)
     {
       // Switch to the main thread - the call to AddCommand in Command1's constructor requires
       // the UI thread.
@@ -78,7 +85,9 @@ namespace TastoDestro
 
       OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
       Instance = new Command1(package, commandService);
-    }
+           
+
+        }
 
     /// <summary>
     /// This function is the callback used to execute the command when the menu item is clicked.

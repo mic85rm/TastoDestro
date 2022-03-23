@@ -18,6 +18,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TastoDestro.Helper;
 using TastoDestro.MenuItems;
 using static Microsoft.VisualStudio.VSConstants;
 using static System.Net.Mime.MediaTypeNames;
@@ -44,7 +45,11 @@ namespace TastoDestro
   /// </remarks>
   /// 
   [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
-  [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasMultipleProjects_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasSingleProject_string)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
   [ProvideService(typeof(Command1), IsAsyncQueryable = true)]
   [ProvideMenuResource("Menus.ctmenu", 1)]
   [Guid(Command1Package.PackageGuidString)]
@@ -64,11 +69,11 @@ namespace TastoDestro
     private static bool IsColumnMenuAdded = false;
     private HierarchyObject _tableMenu = null;
     private DTE2 applicationObject = null;
-
+        //private GestioneDocumenti gestioneDocumenti = null;
     /// <summary>
     /// Initializes a new instance of the <see cref="Command1Package"/> class.
     /// </summary>
-    public Command1Package()
+        public Command1Package()
     {
       // Inside this method you can place any initialization code that does not require
       // any Visual Studio service because at this point the package object is created but
@@ -98,9 +103,13 @@ namespace TastoDestro
       {
         ContextService contextService = (ContextService)ServiceCache.ServiceProvider.GetService(typeof(IContextService)) ?? throw new ArgumentNullException(nameof(IContextService));
         contextService.ActionContext.CurrentContextChanged += ActionContextOnCurrentContextChanged;
-        DTE2 dte = Package.GetGlobalService(typeof(DTE)) as DTE2;
-        dte.Events.DocumentEvents.DocumentClosing += DocumentEvents_DocumentClosing;
-      }
+                DTE2 dte = Package.GetGlobalService(typeof(DTE)) as DTE2;
+               // DTE2 dte = (DTE2)await GetServiceAsync(typeof(EnvDTE.DTE));
+                // dte.Events.DocumentEvents.DocumentClosing += DocumentEvents_DocumentClosing;
+                //dte.Events.WindowEvents.WindowClosing += WindowEvents_DocumentClosing;
+                GestioneDocumenti gestioneDocumenti = new GestioneDocumenti(this);
+                gestioneDocumenti.BeforeSave += GestioneDocumenti_BeforeSave;
+            }
       catch (Exception ex)
       {
         MessageBox.Show(ex.Message);
@@ -110,12 +119,28 @@ namespace TastoDestro
       await Command1.InitializeAsync(this);
     }
 
+        private void GestioneDocumenti_BeforeSave(object sender, Document document)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+           
+            document.Save(string.Format("C:\\{0}",document.Name));
+            MessageBox.Show("finalmente");
+        }
+
+    //    private void WindowEvents_DocumentClosing(Window window)
+    //    {
+    //        ThreadHelper.ThrowIfNotOnUIThread();
+    //        var michele=window.DocumentData;
+    //        //MessageBox.Show("ciao");
+    //    }
 
 
-    private void DocumentEvents_DocumentClosing(Document Document)
-    {
-      MessageBox.Show("ciao");
-    }
+    //    private void DocumentEvents_DocumentClosing(Document window)
+    //{
+    //        ThreadHelper.ThrowIfNotOnUIThread();
+          
+    //  //MessageBox.Show("ciao");
+    //}
 
 
     private void ActionContextOnCurrentContextChanged(object sender, EventArgs e)
