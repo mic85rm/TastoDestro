@@ -109,6 +109,7 @@ namespace TastoDestro
                 //dte.Events.WindowEvents.WindowClosing += WindowEvents_DocumentClosing;
                 GestioneDocumenti gestioneDocumenti = new GestioneDocumenti(this);
                 gestioneDocumenti.BeforeSave += GestioneDocumenti_BeforeSave;
+            
             }
       catch (Exception ex)
       {
@@ -117,6 +118,7 @@ namespace TastoDestro
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
 
       await Command1.InitializeAsync(this);
+ 
     }
 
         private void GestioneDocumenti_BeforeSave(object sender, Document document)

@@ -100,6 +100,8 @@
   <ItemGroup>
     <Content Include="Resources\Command1.png" />
     <Content Include="Resources\Command1Package.ico" />
+    <Content Include="Resources\Command2.png" />
+    <Content Include="Resources\VSPackage1.ico" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

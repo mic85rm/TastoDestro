@@ -37,7 +37,7 @@
          must be a menu. -->
 		<Groups>
 			<Group guid="guidCommand1PackageCmdSet" id="MyMenuGroup" priority="0x0600">
-				<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+				<Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU"/>
 			</Group>
 		</Groups>
 
@@ -54,7 +54,7 @@
           If you do not want an image next to your command, remove the Icon node /> -->
 			<Button guid="guidCommand1PackageCmdSet" id="Command1Id" priority="0x0100" type="Button">
 				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup" />
-				<Icon guid="guidImages" id="bmpPic1" />
+				<!--<Icon guid="guidImages" id="bmpPic1" />-->
 				<Strings>
 					<ButtonText>Michele</ButtonText>
 				</Strings>
