@@ -43,6 +43,7 @@
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
     <CopyVsixExtensionLocation>C:\Program Files %28x86%29\Microsoft SQL Server Management Studio 18\Extensions\TastoDestro</CopyVsixExtensionLocation>
+    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -54,12 +55,22 @@
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
     <CopyVsixExtensionLocation>C:\Program Files %28x86%29\Microsoft SQL Server Management Studio 18\Extensions\TastoDestro</CopyVsixExtensionLocation>
   </PropertyGroup>
+  <PropertyGroup>
+    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Command1.cs" />
     <Compile Include="Command1Package.cs" />
     <Compile Include="Controller\DTEApplicationController.cs" />
     <Compile Include="Helper\GestioneDocumenti.cs" />
+    <Compile Include="Helper\IStorico.cs" />
+    <Compile Include="Helper\SqliteDB.cs" />
+    <Compile Include="Helper\StoricoHelper.cs" />
     <Compile Include="MenuItems\SqlTableMenuItem.cs" />
+    <Compile Include="Model\Storico.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resource1.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -74,6 +85,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Dapper.StrongName">
+      <Version>2.0.123</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects">
       <Version>160.2004021.0</Version>
     </PackageReference>
@@ -81,6 +95,12 @@
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.11.15" />
+    <PackageReference Include="System.Data.SQLite">
+      <Version>1.0.115.5</Version>
+    </PackageReference>
+    <PackageReference Include="System.Data.SQLite.Core">
+      <Version>1.0.115.5</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="Command1Package.vsct">
@@ -102,6 +122,14 @@
     <Content Include="Resources\Command1Package.ico" />
     <Content Include="Resources\Command2.png" />
     <Content Include="Resources\VSPackage1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

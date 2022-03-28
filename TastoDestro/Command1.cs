@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 using TastoDestro.Helper;
+using TastoDestro.Model;
 
 namespace TastoDestro
 {
@@ -114,8 +115,17 @@ namespace TastoDestro
           OLEMSGBUTTON.OLEMSGBUTTON_OK,
           OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
 
+            IStorico rep = new StoricoHelper();
+            var storico = new Storico
+            {
 
+                NomeFile = "prova.sql",
+                DataSalvataggio = DateTime.Now.ToString()
+            };
+            rep.SalvaStorico(storico);
 
-    }
+            Storico retrievedCustomer = rep.GetStorico(storico.ID);
+
+        }
   }
 }

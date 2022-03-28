@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TastoDestro.Helper;
 using TastoDestro.MenuItems;
+using TastoDestro.Model;
 using static Microsoft.VisualStudio.VSConstants;
 using static System.Net.Mime.MediaTypeNames;
 using Task = System.Threading.Tasks.Task;
@@ -101,7 +102,10 @@ namespace TastoDestro
       //addInInstance = (AddIn)addInInst;
       try
       {
-        ContextService contextService = (ContextService)ServiceCache.ServiceProvider.GetService(typeof(IContextService)) ?? throw new ArgumentNullException(nameof(IContextService));
+               
+
+
+                ContextService contextService = (ContextService)ServiceCache.ServiceProvider.GetService(typeof(IContextService)) ?? throw new ArgumentNullException(nameof(IContextService));
         contextService.ActionContext.CurrentContextChanged += ActionContextOnCurrentContextChanged;
                 DTE2 dte = Package.GetGlobalService(typeof(DTE)) as DTE2;
                // DTE2 dte = (DTE2)await GetServiceAsync(typeof(EnvDTE.DTE));
