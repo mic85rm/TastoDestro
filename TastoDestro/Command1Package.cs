@@ -126,7 +126,7 @@ namespace TastoDestro
             ThreadHelper.ThrowIfNotOnUIThread();
            
             document.Save(string.Format("C:\\{0}",document.Name));
-            MessageBox.Show("finalmente");
+           //MessageBox.Show("finalmente");
         }
 
     //    private void WindowEvents_DocumentClosing(Window window)

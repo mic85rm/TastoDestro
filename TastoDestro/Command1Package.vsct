@@ -35,9 +35,30 @@
          other menus or buttons (commands); from a visual point of view you can see the
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
+
+		<Menus>
+			<Menu guid="guidCommand1PackageCmdSet" id="TopLevelMenu" priority="0x500" type="Menu">
+				<Parent guid="guidSHLMainMenu"
+						id="IDG_VS_MM_TOOLSADDINS" />
+				<Strings>
+					<ButtonText>Test Menu</ButtonText>
+				</Strings>
+			</Menu>
+			<Menu guid="guidCommand1PackageCmdSet" id="SubMenu" priority="0x0100" type="Menu">
+				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup"/>
+				<Strings>
+					<ButtonText>Sub Menu</ButtonText>
+					<CommandName>Sub Menu</CommandName>
+				</Strings>
+			</Menu>
+		</Menus>
+
 		<Groups>
 			<Group guid="guidCommand1PackageCmdSet" id="MyMenuGroup" priority="0x0600">
-				<Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU"/>
+				<Parent guid="guidCommand1PackageCmdSet" id="TopLevelMenu"/>
+			</Group>
+			<Group guid="guidCommand1PackageCmdSet" id="SubMenuGroup" priority="0x0601">
+				<Parent guid="guidCommand1PackageCmdSet" id="SubMenu"/>
 			</Group>
 		</Groups>
 
@@ -52,11 +73,18 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-			<Button guid="guidCommand1PackageCmdSet" id="Command1Id" priority="0x0100" type="Button">
-				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup" />
+			<Button guid="guidCommand1PackageCmdSet" id="Command1Id" priority="0x0101" type="Button">
+				<Parent guid="guidCommand1PackageCmdSet" id="SubMenuGroup" />
 				<!--<Icon guid="guidImages" id="bmpPic1" />-->
 				<Strings>
 					<ButtonText>Michele</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidCommand1PackageCmdSet" id="Command2Id" priority="0x0100" type="Button">
+				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup" />
+				<!--<Icon guid="guidImages" id="bmpPic1" />-->
+				<Strings>
+					<ButtonText>Traetta</ButtonText>
 				</Strings>
 			</Button>
 		</Buttons>
@@ -78,8 +106,13 @@
 		<GuidSymbol name="guidCommand1Package" value="{f8750854-1ffd-4804-aa8c-ab8cd791448c}"/>
 		<!-- This is the guid used to group the menu commands together -->
 		<GuidSymbol name="guidCommand1PackageCmdSet" value="{6ff00fde-0ebb-4641-8c19-c8bcb3be9160}">
+			<IDSymbol name="TopLevelMenu" value="0x0021"/>
 			<IDSymbol name="MyMenuGroup" value="0x1020" />
-			<IDSymbol name="Command1Id" value="0x0100" />
+			<IDSymbol name="Command1Id" value="0x0101" />
+			<IDSymbol name="Command2Id" value="0x0100" />
+			<IDSymbol name="SubMenu" value="0x1100"/>
+			<IDSymbol name="SubMenuGroup" value="0x1150"/>
+			<IDSymbol name="cmdidTestSubCommand" value="0x0105"/>
 		</GuidSymbol>
 
 		<GuidSymbol name="guidImages" value="{5f3404e3-4e43-4d4e-af8d-37c07c64c35c}" >
