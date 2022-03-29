@@ -5,6 +5,7 @@ using Microsoft.SqlServer.Management.SqlStudio.Explorer;
 using Microsoft.SqlServer.Management.UI.VSIntegration;
 using Microsoft.SqlServer.Management.UI.VSIntegration.ObjectExplorer;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.CommandBars;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -14,6 +15,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,7 +104,7 @@ namespace TastoDestro
       //addInInstance = (AddIn)addInInst;
       try
       {
-               
+              
 
 
                 ContextService contextService = (ContextService)ServiceCache.ServiceProvider.GetService(typeof(IContextService)) ?? throw new ArgumentNullException(nameof(IContextService));
@@ -120,10 +122,34 @@ namespace TastoDestro
         MessageBox.Show(ex.Message);
       }
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
+            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
-      await Command1.InitializeAsync(this);
+            CommandBarControl cmdBarControl2 = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+
+            var myButton = (CommandBarButton)cmdBarControl2;
+
+            myButton.Visible = true;
+
+            myButton.Enabled = true;
+
+            myButton.Caption = "Salva in Excel";
+
+            //myButton.FaceId = 224;
+
+            myButton.Style = MsoButtonStyle.msoButtonIconAndCaption;
+
+            myButton.Click += new _CommandBarButtonEvents_ClickEventHandler(btnMEssageBoxxResults_Click);
+
+
+            await Command1.InitializeAsync(this);
  
     }
+
+        private void btnMEssageBoxxResults_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        {
+            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
+
+        }
 
         private void GestioneDocumenti_BeforeSave(object sender, Document document)
         {
