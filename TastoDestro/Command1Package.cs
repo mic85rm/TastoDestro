@@ -2,6 +2,7 @@
 using EnvDTE80;
 using Microsoft.SqlServer.Management;
 using Microsoft.SqlServer.Management.SqlStudio.Explorer;
+using Microsoft.SqlServer.Management.UI.Grid;
 using Microsoft.SqlServer.Management.UI.VSIntegration;
 using Microsoft.SqlServer.Management.UI.VSIntegration.ObjectExplorer;
 using Microsoft.VisualStudio;
@@ -11,7 +12,10 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -122,6 +126,9 @@ namespace TastoDestro
         MessageBox.Show(ex.Message);
       }
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
+
+            var outputWindowEvents = applicationObject.Events.OutputWindowEvents["Output"];
+            outputWindowEvents.PaneUpdated += OutputWindowEvents_PaneUpdated;
             Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
             CommandBarControl cmdBarControl2 = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
@@ -147,8 +154,94 @@ namespace TastoDestro
 
         private void btnMEssageBoxxResults_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
+            //IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+
+            //Guid generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane; // P.S. There's also the GUID_OutWindowDebugPane available.
+            //IVsOutputWindowPane generalPane;
+            //outWindow.GetPane(ref generalPaneGuid, out generalPane);
+
+            //generalPane.OutputString("Hello World!");
+            //generalPane.Activate(); // Brings this pane into view
+            // vsWindowTypeOutput
+            //String output = "ST: 0:0:{ 34e76e81 - ee4a - 11d0 - ae2e - 00a0c90fffc3}";
+            DTE dte = (DTE)GetService(typeof(DTE));
+            var objType = ServiceCache.ScriptFactory.GetType();
+            var method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic | BindingFlags.Instance);
+            var Result = method1.Invoke(ServiceCache.ScriptFactory, new object[] { ServiceCache.VSMonitorSelection, false, null });
+            var objType2 = Result.GetType();
+            var field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic | BindingFlags.Instance);
+            var SQLResultsControl = field.GetValue(Result);
+            var m_gridResultsPage = GetNonPublicField(SQLResultsControl, "m_gridResultsPage");
+            CollectionBase gridContainers = GetNonPublicField(m_gridResultsPage, "m_gridContainers") as CollectionBase;
+            foreach (var gridContainer in gridContainers)
+            {
+                var grid = GetNonPublicField(gridContainer, "m_grid") as GridControl;
+                var gridStorage = grid.GridStorage;
+                var schemaTable = GetNonPublicField(gridStorage, "m_schemaTable") as DataTable;
+                var data = new DataTable();
+
+                for (long i = 0; i < gridStorage.NumRows(); i++)
+                {
+                    var rowItems = new List<object>();
+
+                    for (int c = 0; c < schemaTable.Rows.Count; c++)
+                    {
+                        var columnName = schemaTable.Rows[c][0].ToString();
+                        var columnType = schemaTable.Rows[c][12] as Type;
+
+                        if (!data.Columns.Contains(columnName))
+                        {
+                            data.Columns.Add(columnName, columnType);
+                        }
+
+                        var cellData = gridStorage.GetCellDataAsString(i, c + 1);
+
+                        if (cellData == "NULL")
+                        {
+                            rowItems.Add(null);
+
+                            continue;
+                        }
+
+                        if (columnType == typeof(bool))
+                        {
+                            cellData = cellData == "0" ? "False" : "True";
+                        }
+
+                        Console.WriteLine($"Parsing {columnName} with '{cellData}'");
+                        var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
+
+                        rowItems.Add(typedValue);
+                    }
+
+                    data.Rows.Add(rowItems.ToArray());
+                }
+
+                data.AcceptChanges();
+            }
+            //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+            Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+            var collezione = window.Collection;
+            var michele = window.Selection;
+            var michele2 = window.Object;
+            var finestra = collezione.Item(3);
+            var testo = finestra.Selection;
+            finestra.Activate();
+          
+        }
+        public object GetNonPublicField(object obj, string field)
+        {
+            FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            return f.GetValue(obj);
+        }
+
+        private void OutputWindowEvents_PaneUpdated(OutputWindowPane pPane)
+        {
+            throw new NotImplementedException();
         }
 
         private void GestioneDocumenti_BeforeSave(object sender, Document document)
