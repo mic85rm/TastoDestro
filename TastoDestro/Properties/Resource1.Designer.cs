@@ -61,6 +61,15 @@ namespace TastoDestro.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to R0lGODlhGAAYAPcAAAAAAA1qPhVwOiJ7Pyh7Og9rRSZ6QSlyTTJrSjFpTTZtUjB2UzxzVz1yWEd9X0p8YzKBOTaDOTiFOTmGSjuOTUWMOFeXOFChPFmmPmagOGSuPkyGSEiPX1mZQ0aNYEmgUVynS12nT1GrWly4ZWKOeGaQeWiSeWuVemyWemqdfnGZe3Wce3adfGauQWeuSWuyQGqwSX2uT3O3RXa6QXi7Q36+QnywX3u7VGqubWSge2ShfGOwYmS5aGmwYnqhfnuven23cWvDcW3Gc2/IdXnDeHrHfXnJfGyUgGqdg3WbiHmliH2sgHmxgoC5RoO+RYG/VYLBQ4bEQ4nFRYjESY/JRY/JS4rFVJTNRofAZY/GYYvAeZzMdoyxjoq/g4ixlYu0lpm/mZetopC2o521qIHMhYbOiYvAhY/ChYrAjo3CkYzQj5HKipfJjJnBiZLCkJHDlJXEkZfIm5vAmZrAm5zBmZ7CmpzKnpLSlZrBsKDDl6DDmqHE [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ICONAEXCEL {
+            get {
+                return ResourceManager.GetString("ICONAEXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT  STUFF(( SELECT &apos;,&apos; + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos; FOR XML PATH(&apos;&apos;)), 1, 1, &apos;&apos;).
         /// </summary>
         internal static string SQLCOLONNE {

@@ -66,6 +66,9 @@
     <Compile Include="Command1Package.cs" />
     <Compile Include="Controller\DTEApplicationController.cs" />
     <Compile Include="Helper\GestioneDocumenti.cs" />
+    <Compile Include="Helper\IconeMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Helper\IStorico.cs" />
     <Compile Include="Helper\SqliteDB.cs" />
     <Compile Include="Helper\StoricoHelper.cs" />

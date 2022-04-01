@@ -31,6 +31,7 @@ using static Microsoft.VisualStudio.VSConstants;
 using static System.Net.Mime.MediaTypeNames;
 using Task = System.Threading.Tasks.Task;
 
+
 namespace TastoDestro
 {
   /// <summary>
@@ -126,11 +127,26 @@ namespace TastoDestro
         MessageBox.Show(ex.Message);
       }
       applicationObject = (DTE2)await GetServiceAsync(typeof(DTE));
-
+            
             var outputWindowEvents = applicationObject.Events.OutputWindowEvents["Output"];
             outputWindowEvents.PaneUpdated += OutputWindowEvents_PaneUpdated;
-            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
+            //    [208]   "Menu di scelta rapida editor file SQL" object { Microsoft.VisualStudio.PlatformUI.Automation.CommandBar._Marshaler}
+            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryPanel = ((CommandBars)applicationObject.CommandBars)[208];
+            CommandBarControl cmdBarControl3 = sqlQueryPanel.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+
+            var myButton2 = (CommandBarButton)cmdBarControl3;
+
+            myButton2.Visible = true;
+            myButton2.Style = MsoButtonStyle.msoButtonIconAndCaption;
+            myButton2.Enabled = true;
+            myButton2.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
+            myButton2.Caption = "Salva in Excel";
+
+            var id =((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"].Index;
+            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
+            IObjectExplorerService objectExplorer = (ObjectExplorerService)ServiceCache.ServiceProvider.GetService(typeof(IObjectExplorerService)) ?? throw new ArgumentNullException(nameof(IObjectExplorerService));
+            
             CommandBarControl cmdBarControl2 = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
 
             var myButton = (CommandBarButton)cmdBarControl2;
@@ -140,11 +156,12 @@ namespace TastoDestro
             myButton.Enabled = true;
 
             myButton.Caption = "Salva in Excel";
-
-            //myButton.FaceId = 224;
+            
+          
+           
 
             myButton.Style = MsoButtonStyle.msoButtonIconAndCaption;
-
+            
             myButton.Click += new _CommandBarButtonEvents_ClickEventHandler(btnMEssageBoxxResults_Click);
 
 
@@ -152,6 +169,8 @@ namespace TastoDestro
  
     }
 
+
+    
         private void btnMEssageBoxxResults_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -232,6 +251,12 @@ namespace TastoDestro
             finestra.Activate();
           
         }
+
+
+
+    
+
+
         public object GetNonPublicField(object obj, string field)
         {
             FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
