@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
+using Newtonsoft.Json;
+using OfficeOpenXml;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,6 +21,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -133,22 +136,34 @@ namespace TastoDestro
 
             //    [208]   "Menu di scelta rapida editor file SQL" object { Microsoft.VisualStudio.PlatformUI.Automation.CommandBar._Marshaler}
             Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryPanel = ((CommandBars)applicationObject.CommandBars)[208];
-            CommandBarControl cmdBarControl3 = sqlQueryPanel.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+            CommandBarPopup commandBarPopup = (CommandBarPopup)sqlQueryPanel.Controls.Add(MsoControlType.msoControlPopup, Missing.Value, Missing.Value, 6, true);
+            CommandBarControl cmdBarControl3 = commandBarPopup.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, 1, true);
+
+      
+            //CommandBarControl cmdBarControl3 = sqlQueryPanel.Controls.Add(MsoControlType.msoControlButton,Missing.Value, Missing.Value, 6, true);
+
+            commandBarPopup.Caption = "Inserisci Snippet";
+
+
+  
+            
 
             var myButton2 = (CommandBarButton)cmdBarControl3;
-
+          
             myButton2.Visible = true;
             myButton2.Style = MsoButtonStyle.msoButtonIconAndCaption;
             myButton2.Enabled = true;
             myButton2.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
-            myButton2.Caption = "Salva in Excel";
+            myButton2.Caption = "Biposte..Personale";
+
+
 
             var id =((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"].Index;
             Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
             IObjectExplorerService objectExplorer = (ObjectExplorerService)ServiceCache.ServiceProvider.GetService(typeof(IObjectExplorerService)) ?? throw new ArgumentNullException(nameof(IObjectExplorerService));
-            
-            CommandBarControl cmdBarControl2 = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
-
+            CommandBarPopup commandBarPopup1 = (CommandBarPopup)sqlQueryGridPane.Controls.Add(MsoControlType.msoControlPopup, Missing.Value, Missing.Value, Missing.Value, true);
+            CommandBarControl cmdBarControl2 = commandBarPopup1.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+            commandBarPopup1.Caption = "Salva nel formato";
             var myButton = (CommandBarButton)cmdBarControl2;
 
             myButton.Visible = true;
@@ -156,25 +171,52 @@ namespace TastoDestro
             myButton.Enabled = true;
 
             myButton.Caption = "Salva in Excel";
-            
-          
-           
-
             myButton.Style = MsoButtonStyle.msoButtonIconAndCaption;
-            
+
+            myButton.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
+
+            CommandBarControl cmdBarControl4 = commandBarPopup1.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+
             myButton.Click += new _CommandBarButtonEvents_ClickEventHandler(btnMEssageBoxxResults_Click);
 
+            var myButton3 = (CommandBarButton)cmdBarControl4;
+
+            myButton3.Visible = true;
+
+            myButton3.Enabled = true;
+
+            myButton3.Caption = "Salva in JSON";
+            myButton3.Style = MsoButtonStyle.msoButtonIconAndCaption;
+
+            myButton3.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAJSON));
+
+
+
+            myButton3.Click += new _CommandBarButtonEvents_ClickEventHandler(MyButton3_Click);
+           
 
             await Command1.InitializeAsync(this);
  
     }
 
+        private void MyButton3_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileOk += SaveFileDialog_FileOk1; ;
+            saveFileDialog.ShowDialog();
+        }
 
-    
+        private void SaveFileDialog_FileOk1(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            string json=DataTableToJSON(SalvaDatatable());
+            var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".json"));
+            System.IO.File.WriteAllText(file.ToString(), json);
+        }
+
         private void btnMEssageBoxxResults_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
+          //  Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
             //IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
 
@@ -186,6 +228,25 @@ namespace TastoDestro
             //generalPane.Activate(); // Brings this pane into view
             // vsWindowTypeOutput
             //String output = "ST: 0:0:{ 34e76e81 - ee4a - 11d0 - ae2e - 00a0c90fffc3}";
+ 
+            //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+            //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+            //var collezione = window.Collection;
+            //var michele = window.Selection;
+            //var michele2 = window.Object;
+            //var finestra = collezione.Item(3);
+            //var testo = finestra.Selection;
+            //finestra.Activate();
+            
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileOk += SaveFileDialog_FileOk;
+            saveFileDialog.ShowDialog();
+        }
+
+
+        public DataTable SalvaDatatable() {
+            ThreadHelper.ThrowIfNotOnUIThread();
             DTE dte = (DTE)GetService(typeof(DTE));
             var objType = ServiceCache.ScriptFactory.GetType();
             var method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -195,12 +256,13 @@ namespace TastoDestro
             var SQLResultsControl = field.GetValue(Result);
             var m_gridResultsPage = GetNonPublicField(SQLResultsControl, "m_gridResultsPage");
             CollectionBase gridContainers = GetNonPublicField(m_gridResultsPage, "m_gridContainers") as CollectionBase;
+            var data = new DataTable();
             foreach (var gridContainer in gridContainers)
             {
                 var grid = GetNonPublicField(gridContainer, "m_grid") as GridControl;
                 var gridStorage = grid.GridStorage;
                 var schemaTable = GetNonPublicField(gridStorage, "m_schemaTable") as DataTable;
-                var data = new DataTable();
+                
 
                 for (long i = 0; i < gridStorage.NumRows(); i++)
                 {
@@ -241,21 +303,30 @@ namespace TastoDestro
 
                 data.AcceptChanges();
             }
-            //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
-            Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
-            var collezione = window.Collection;
-            var michele = window.Selection;
-            var michele2 = window.Object;
-            var finestra = collezione.Item(3);
-            var testo = finestra.Selection;
-            finestra.Activate();
-          
+            return data;
+        }
+
+        public string DataTableToJSON(DataTable table)
+        {
+            string JSONString = string.Empty;
+            JSONString = JsonConvert.SerializeObject(table);
+            return JSONString;
         }
 
 
+        private void SaveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".xlsx"));
+            using (var package = new ExcelPackage(file))
+            {
+                ExcelWorksheet ws = package.Workbook.Worksheets.Add("Test");
+                ws.Cells[1, 1].LoadFromDataTable(SalvaDatatable(), true);
+          
+                package.Save();
+                MessageBox.Show("Saved!");
+            }
 
-    
-
+        }
 
         public object GetNonPublicField(object obj, string field)
         {

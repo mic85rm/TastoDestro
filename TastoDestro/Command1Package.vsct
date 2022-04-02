@@ -41,14 +41,14 @@
 				<Parent guid="guidSHLMainMenu"
 						id="IDG_VS_MM_TOOLSADDINS" />
 				<Strings>
-					<ButtonText>Test Menu</ButtonText>
+					<ButtonText>MicheleEstensione</ButtonText>
 				</Strings>
 			</Menu>
 			<Menu guid="guidCommand1PackageCmdSet" id="SubMenu" priority="0x0100" type="Menu">
 				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup"/>
 				<Strings>
-					<ButtonText>Sub Menu</ButtonText>
-					<CommandName>Sub Menu</CommandName>
+					<ButtonText>SottoMenu</ButtonText>
+					<CommandName>SottoMenu</CommandName>
 				</Strings>
 			</Menu>
 		</Menus>

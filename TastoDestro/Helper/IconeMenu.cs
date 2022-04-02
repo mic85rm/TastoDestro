@@ -3,7 +3,13 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using stdole;
-public class IconeMenu : AxHost
+
+//#if DEBUG
+//public class IconeMenu : AxHost
+//#else
+    public abstract class IconeMenu : AxHost
+//#endif
+
 {
     public IconeMenu() : base("59EE46BA-677D-4d20-BF10-8D8067CB8B33")
     {

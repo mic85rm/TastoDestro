@@ -70,6 +70,15 @@ namespace TastoDestro.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQVR4nO3d95cdZ37n98/Nfbv7ds45oIFGzomZHHLI4Qwnj0bR65V8tNnnaO211v+A/YO99q6tWclayUqjkSxpEodhOOQwAARIkCBy6Aa60eicc7zZP0DkggEEcKvurapb79c5/IVEPfVl4/atT1U9z/P1CB8zNTWwJ5Xy/orHk35YUsM//lNgcVkA7G1d0pjHozck71/W1LQct7og4G48VhdgF9PTN7+cSul/kbTL6loAOFsqlX45vrr0P7Vs2n3J6lqAO3F9ALh+/XooEgn8Z49Hv211LQDyQzKZ0OryQjwQCj3W1rbzpNX1AJ/Fa3UBVhoeHg6XlgZe5uIPwGypVCoQj0bfunnz4gNW1wJ8FtcGgHQ67QkGk99Pp/W41bUAyE+pVMpPCIBduTYATE8P/WtJ37S6DgD5jRAAu3LlHICpqYG6dNrT [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ICONAJSON {
+            get {
+                return ResourceManager.GetString("ICONAJSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT  STUFF(( SELECT &apos;,&apos; + quotename(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS a WHERE TABLE_NAME = &apos;{0}&apos; FOR XML PATH(&apos;&apos;)), 1, 1, &apos;&apos;).
         /// </summary>
         internal static string SQLCOLONNE {
