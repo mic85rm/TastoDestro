@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TastoDestro.Controller;
 using TastoDestro.Helper;
 using TastoDestro.MenuItems;
 using TastoDestro.Model;
@@ -153,9 +154,9 @@ namespace TastoDestro
             myButton2.Visible = true;
             myButton2.Style = MsoButtonStyle.msoButtonIconAndCaption;
             myButton2.Enabled = true;
-            myButton2.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
+            //myButton2.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
             myButton2.Caption = "Biposte..Personale";
-
+            myButton2.Click += MyButton2_Click;
 
 
             var id =((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"].Index;
@@ -197,6 +198,13 @@ namespace TastoDestro
 
             await Command1.InitializeAsync(this);
  
+    }
+
+        private void MyButton2_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        {
+            DTEApplicationController dteController = new DTEApplicationController();
+     
+            dteController.WriteToWindow(applicationObject,"ciao");
     }
 
         private void MyButton3_Click(CommandBarButton Ctrl, ref bool CancelDefault)

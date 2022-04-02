@@ -113,22 +113,25 @@ namespace TastoDestro.Helper
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var documentInfo = mRunningDocumentTable.GetDocumentInfo(docCookie);
-            var textLines = documentInfo.DocData as IVsTextLines;
-
-            var textBuffer=editorAdaptersFactory.GetDataBuffer(textLines);
-            if (textBuffer.CurrentSnapshot.Length == 0) { return null; }
-            else
+            IVsTextLines textLines = documentInfo.DocData as IVsTextLines;
+            if (textLines != null)
             {
-                //textBufferProvider.GetTextBuffer(out ciao);
+                var textBuffer = editorAdaptersFactory.GetDataBuffer(textLines);
+                if (textBuffer.CurrentSnapshot.Length == 0) { return null; }
+                else
+                {
+                    //textBufferProvider.GetTextBuffer(out ciao);
 
-                //if (documentInfo.=null) {
-                return mDte.Documents.Cast<Document>().FirstOrDefault(doc => doc.FullName == documentInfo.Moniker);
-                //}
-                //else
-                //{
-                //    return null;
-                //}
+                    //if (documentInfo.=null) {
+                    return mDte.Documents.Cast<Document>().FirstOrDefault(doc => doc.FullName == documentInfo.Moniker);
+                    //}
+                    //else
+                    //{
+                    //    return null;
+                    //}
+                }
             }
+            else return null;
         }
 
         #endregion

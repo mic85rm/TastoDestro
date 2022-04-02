@@ -52,11 +52,34 @@ namespace TastoDestro.Controller
       }
     }
 
-    /// <summary>
-    /// GetContentsOfCurrentQueryWindow
-    /// </summary>
-    /// <returns></returns>
-    public string GetContentsOfCurrentQueryWindow()
+
+        public void WriteToWindow(DTE2 application, string message)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                ServiceCache.ScriptFactory.CreateNewBlankScript(Microsoft.SqlServer.Management.UI.VSIntegration.Editors.ScriptType.Sql);
+
+                // insert SQL definition to document
+                EnvDTE.TextDocument doc = (EnvDTE.TextDocument)ServiceCache.ExtensibilityModel.Application.ActiveDocument.Object();
+
+                doc.EndPoint.CreateEditPoint().Insert(message);
+
+
+            }
+            catch
+            {
+                //        MessageBox.Show(message, "T-SQL Tidy Error");
+            }
+        }
+
+
+        /// <summary>
+        /// GetContentsOfCurrentQueryWindow
+        /// </summary>
+        /// <returns></returns>
+        public string GetContentsOfCurrentQueryWindow()
     {
       ThreadHelper.ThrowIfNotOnUIThread();
       EnvDTE.TextDocument doc = (EnvDTE.TextDocument)ServiceCache.ExtensibilityModel.Application.ActiveDocument.Object(null);
