@@ -164,6 +164,18 @@ namespace TastoDestro
             IObjectExplorerService objectExplorer = (ObjectExplorerService)ServiceCache.ServiceProvider.GetService(typeof(IObjectExplorerService)) ?? throw new ArgumentNullException(nameof(IObjectExplorerService));
             CommandBarPopup commandBarPopup1 = (CommandBarPopup)sqlQueryGridPane.Controls.Add(MsoControlType.msoControlPopup, Missing.Value, Missing.Value, Missing.Value, true);
             CommandBarControl cmdBarControl2 = commandBarPopup1.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
+            CommandBarControl cmdBarControlCopiaFormattata = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, 4, true);
+            cmdBarControlCopiaFormattata.Caption = "Copia con formattazione";
+            var btnCopiaFormattata= (CommandBarButton)cmdBarControlCopiaFormattata;
+            btnCopiaFormattata.Visible = true;
+
+            btnCopiaFormattata.Enabled = true;
+            btnCopiaFormattata.Caption = "Copia con formattazione";
+            btnCopiaFormattata.Style= MsoButtonStyle.msoButtonIconAndCaption;
+            // btnCopiaFormattata.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
+            btnCopiaFormattata.Click += BtnCopiaFormattata_Click;
+
+
             commandBarPopup1.Caption = "Salva nel formato";
             var myButton = (CommandBarButton)cmdBarControl2;
 
@@ -200,6 +212,11 @@ namespace TastoDestro
  
     }
 
+        private void BtnCopiaFormattata_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        {
+            SalvaDatatable(true);
+        }
+
         private void MyButton2_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
             DTEApplicationController dteController = new DTEApplicationController();
@@ -224,7 +241,7 @@ namespace TastoDestro
         private void btnMEssageBoxxResults_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-          //  Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
+            //  Microsoft.VisualStudio.CommandBars.CommandBar sqlQueryGridPane = ((CommandBars)applicationObject.CommandBars)["SQL Results Grid Tab Context"];
 
             //IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
 
@@ -236,7 +253,7 @@ namespace TastoDestro
             //generalPane.Activate(); // Brings this pane into view
             // vsWindowTypeOutput
             //String output = "ST: 0:0:{ 34e76e81 - ee4a - 11d0 - ae2e - 00a0c90fffc3}";
- 
+
             //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
             //Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
             //var collezione = window.Collection;
@@ -245,15 +262,30 @@ namespace TastoDestro
             //var finestra = collezione.Item(3);
             //var testo = finestra.Selection;
             //finestra.Activate();
-            
 
+         //   var ciao=Ctrl.Control;
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.FileOk += SaveFileDialog_FileOk;
             saveFileDialog.ShowDialog();
         }
 
 
-        public DataTable SalvaDatatable() {
+
+        private class ColonneDaCopiare
+        {
+            int IDColonna { get; set; }
+            int IDUltimaRiga { get; set; }
+            string NomeColonna { get; set; }
+
+            public ColonneDaCopiare(int IDColonna,int IDUltimaRiga,string NomeColonna) {
+                this.IDColonna = IDColonna;
+                this.IDUltimaRiga = IDUltimaRiga;
+                this.NomeColonna = NomeColonna;
+            }
+        }
+
+
+        public DataTable SalvaDatatable(bool ColonnaSingola=false) {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE dte = (DTE)GetService(typeof(DTE));
             var objType = ServiceCache.ScriptFactory.GetType();
@@ -310,6 +342,35 @@ namespace TastoDestro
                 }
 
                 data.AcceptChanges();
+               
+                if (ColonnaSingola)
+                {
+                    
+                    //List<int> IDColonna= new List<int>();
+                    var listaColonne = new List<ColonneDaCopiare>();
+                 
+                   
+                    List<string> NomeColonna = new List<string>();
+                    IDictionary<int, int> numberNames = new Dictionary<int,int>();
+                    int IDColonna = -1;
+                    var NumeroColonneSelezionata=grid.SelectedCells;
+                    for (int i = 0; i < NumeroColonneSelezionata.Count; i++)
+                    {
+                       
+                        IDColonna =(int) GetNonPublicProperties(NumeroColonneSelezionata[i], "LastUpdatedCol");
+                        string NomeColonnaDaAggiungere = data.Columns[IDColonna].ColumnName;
+                        int RigheDaAggiungere= (int)GetNonPublicProperties(NumeroColonneSelezionata[i], "LastUpdatedRow");
+                        if (!NomeColonna.Contains(NomeColonnaDaAggiungere)){
+                            // NomeColonna.Add(string.Format("{0}", data.Columns[IDColonna].ColumnName));
+                            // NomeColonna.Add( data.Columns[IDColonna].ColumnName);
+                            ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(IDColonna,RigheDaAggiungere,NomeColonnaDaAggiungere);
+                            listaColonne.Add(colonneDaCopiare);
+                        }
+                    }
+                    //string NomeColonnaSpalmato = string.Join(",", NomeColonna.ToArray());
+                  // NomeColonnaSpalmato = NomeColonnaSpalmato.Replace(@"""", string.Empty);
+                    data = data.DefaultView.ToTable(false,NomeColonna.ToArray() );
+                }
             }
             return data;
         }
@@ -338,10 +399,19 @@ namespace TastoDestro
 
         public object GetNonPublicField(object obj, string field)
         {
-            FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance );
 
             return f.GetValue(obj);
         }
+
+        public object GetNonPublicProperties(object obj, string field)
+        {
+            PropertyInfo f = obj.GetType().GetProperty(field, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            return f.GetValue(obj);
+        }
+
+
 
         private void OutputWindowEvents_PaneUpdated(OutputWindowPane pPane)
         {
