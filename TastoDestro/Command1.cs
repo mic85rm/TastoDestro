@@ -12,9 +12,48 @@ using TastoDestro.Model;
 
 namespace TastoDestro
 {
-  /// <summary>
-  /// Command handler
-  /// </summary>
+    /// <summary>
+    /// Command handler
+    /// </summary>
+    /// 
+
+    public enum ETipiColonna
+    {
+        Boolean
+
+,Byte
+
+,Char
+
+,DateTime
+
+,Decimal
+
+,Double
+
+,Guid
+
+,Int16
+
+,Int32
+
+,Int64
+
+,SByte
+
+,Single
+
+,String
+
+,TimeSpan
+
+,UInt16
+
+,UInt32
+
+,UInt64
+    }
+
   internal sealed class Command1
   {
     /// <summary>

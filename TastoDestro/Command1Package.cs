@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,8 +23,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -168,7 +171,6 @@ namespace TastoDestro
             cmdBarControlCopiaFormattata.Caption = "Copia con formattazione";
             var btnCopiaFormattata= (CommandBarButton)cmdBarControlCopiaFormattata;
             btnCopiaFormattata.Visible = true;
-
             btnCopiaFormattata.Enabled = true;
             btnCopiaFormattata.Caption = "Copia con formattazione";
             btnCopiaFormattata.Style= MsoButtonStyle.msoButtonIconAndCaption;
@@ -214,7 +216,7 @@ namespace TastoDestro
 
         private void BtnCopiaFormattata_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
-            SalvaDatatable(true);
+            CopiaColonne();
         }
 
         private void MyButton2_Click(CommandBarButton Ctrl, ref bool CancelDefault)
@@ -227,14 +229,17 @@ namespace TastoDestro
         private void MyButton3_Click(CommandBarButton Ctrl, ref bool CancelDefault)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileOk += SaveFileDialog_FileOk1; ;
+            saveFileDialog.FileOk += SaveFileDialog_FileOk1;
+            saveFileDialog.DefaultExt = "json";
+            saveFileDialog.Filter = "JSON files (*.json)|*.json";
             saveFileDialog.ShowDialog();
         }
 
         private void SaveFileDialog_FileOk1(object sender, System.ComponentModel.CancelEventArgs e)
         {
             string json=DataTableToJSON(SalvaDatatable());
-            var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".json"));
+            //var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".json"));
+            var file = new FileInfo(((SaveFileDialog)sender).FileName);
             System.IO.File.WriteAllText(file.ToString(), json);
         }
 
@@ -266,26 +271,179 @@ namespace TastoDestro
          //   var ciao=Ctrl.Control;
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.FileOk += SaveFileDialog_FileOk;
+            saveFileDialog.DefaultExt = "xlsx";
+            saveFileDialog.Filter = "Excel files (*.xlsx)|*.xlsx";
             saveFileDialog.ShowDialog();
         }
 
 
 
-        private class ColonneDaCopiare
+        public class ColonneDaCopiare
         {
-            int IDColonna { get; set; }
-            int IDUltimaRiga { get; set; }
-            string NomeColonna { get; set; }
+            private int _IDColonna;
+            private int _IDUltimaRiga;
+         
+            public int IDColonna { get { return _IDColonna; } set { _IDColonna = value; } }
+            public int IDUltimaRiga { get { return _IDUltimaRiga; } set { _IDUltimaRiga = value; } }
 
-            public ColonneDaCopiare(int IDColonna,int IDUltimaRiga,string NomeColonna) {
+            public ColonneDaCopiare(int IDColonna,int IDUltimaRiga) {
                 this.IDColonna = IDColonna;
                 this.IDUltimaRiga = IDUltimaRiga;
-                this.NomeColonna = NomeColonna;
             }
+
+          
+
+            public bool  GetColonne(int colonna) { if (IDColonna == colonna) { return true; } else { return false; } }
+            
         }
 
 
-        public DataTable SalvaDatatable(bool ColonnaSingola=false) {
+        public void CopiaColonne()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            DTE dte = (DTE)GetService(typeof(DTE));
+            var objType = ServiceCache.ScriptFactory.GetType();
+            var method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic | BindingFlags.Instance);
+            var Result = method1.Invoke(ServiceCache.ScriptFactory, new object[] { ServiceCache.VSMonitorSelection, false, null });
+            var objType2 = Result.GetType();
+            var field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic | BindingFlags.Instance);
+            var SQLResultsControl = field.GetValue(Result);
+            var m_gridResultsPage = GetNonPublicField(SQLResultsControl, "m_gridResultsPage");
+            CollectionBase gridContainers = GetNonPublicField(m_gridResultsPage, "m_gridContainers") as CollectionBase;
+            var data = new DataTable();
+            bool inserito = false;
+            StringBuilder sb = new StringBuilder();
+            foreach (var gridContainer in gridContainers)
+            {
+               
+                var grid = GetNonPublicField(gridContainer, "m_grid") as GridControl;
+                if (grid.ContainsFocus == true) { 
+                var gridStorage = grid.GridStorage;
+                var schemaTable = GetNonPublicField(gridStorage, "m_schemaTable") as DataTable;
+                var NumeroColonneSelezionata = grid.SelectedCells;
+                 Microsoft.SqlServer.Management.UI.Grid.SelectionManager selectionManager= (SelectionManager)GetNonPublicField(grid, "m_selMgr");
+                    var scroll = GetNonPublicField(grid,"m_scrollMgr");
+                  
+                List<ColonneDaCopiare> ColonneRighe = new List<ColonneDaCopiare>();
+                for (int indice=0;indice< NumeroColonneSelezionata.Count;indice++)
+                {
+                    ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(((int)GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedCol") - 1), Convert.ToInt32(GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedRow")));
+                    ColonneRighe.Add(colonneDaCopiare);
+                    
+                }
+                if (ColonneRighe.Count == 1)
+                {
+                    for (int idx = (int)selectionManager.CurrentRow; idx < selectionManager.LastUpdatedRow; idx++)
+                    {
+                        ColonneDaCopiare _colonneDaCopiare = new ColonneDaCopiare(selectionManager.CurrentColumn - 1, idx);
+                        ColonneRighe.Add(_colonneDaCopiare);
+                    }
+                }
+                string columnName;
+                Type columnType;
+                    
+                for (long i = 0; i < gridStorage.NumRows(); i++)
+                {
+                    var rowItems = new List<object>();
+                        
+                    if ((i > 0) && (ColonneRighe.Count > 0)&&(ColonneRighe.FindAll(x => x.IDUltimaRiga==i).Count()>0)) { sb.AppendLine(); }
+                    for (int c = 0; c < schemaTable.Rows.Count; c++)
+                    {
+                      var risultato=ColonneRighe.Find(x=>x.IDColonna==c);
+                    
+                     
+                        if (risultato!=null) { 
+                         columnName = schemaTable.Rows[c][0].ToString();
+                         columnType = schemaTable.Rows[c][12] as Type;
+                       
+                        if (!data.Columns.Contains(columnName))
+                        {
+                            data.Columns.Add(columnName, columnType);
+                        }
+                              //  ColonneDaCopiare colonnaDaCercare = new ColonneDaCopiare(c, (int)i);
+                                var result = ColonneRighe.Find(x => x.IDUltimaRiga == i && x.IDColonna==c);
+                            if (result!=null)
+                            {
+                                var cellData = gridStorage.GetCellDataAsString(i, c + 1);
+
+                                //if ((cellData == "NULL")|| (i!=risultato.IDUltimaRiga))
+                                if (cellData == "NULL")
+                                {
+                                    rowItems.Add(null);
+                                    inserito = false;
+                                    continue;
+                                }
+
+                                if ((columnType == typeof(bool) && (1 == 1)))
+                                {
+                                    cellData = cellData == "0" ? "False" : "True";
+                                }
+
+                                Console.WriteLine($"Parsing {columnName} with '{cellData}'");
+
+                                var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
+                                rowItems.Add(typedValue);
+                                if (columnType.Name == "String")
+                                {
+                                    typedValue = String.Format("'{0}',", typedValue);
+                                }
+                                if (columnType.Name == "DateTime")
+                                {
+                                    DateTime? dateTime = (DateTime)typedValue;
+                                    string sqlFormattedDate = dateTime.HasValue ? dateTime.Value.ToString("yyyy-MM-dd HH:mm:ss"): "<errore>";
+                                    typedValue = String.Format("'{0}',",sqlFormattedDate );
+                                }
+                                    if ((columnType.Name == "Byte")||(columnType.Name=="Int32"))
+                                    {
+                                       
+                                        typedValue = String.Format("{0},", typedValue);
+                                    }
+                                    sb.Append(typedValue);
+                                inserito = true;
+                            }
+                            else { inserito = false; }
+                        }
+                            ColonneDaCopiare colonnaDaEliminare = new ColonneDaCopiare(c,(int)i);
+                            ColonneRighe.Remove(colonnaDaEliminare);
+                        }
+
+                        //data.Rows.Add(rowItems.ToArray());
+                        
+                    }
+
+                    // data.AcceptChanges();
+
+                }
+
+            }
+            Clipboard.SetText(sb.ToString().Remove(sb.Length-1));
+       
+
+        }
+
+
+        public String EstraiColonna(int idcolonna,int numerorighe,int tipocolonna,DataTable dt) {
+            StringBuilder sb = new StringBuilder();
+            String Appoggio = string.Empty;
+            foreach (DataRow row in dt.Rows)
+            {
+
+                if (dt.Rows.IndexOf(row) <= numerorighe)
+                {
+                    if (tipocolonna == (int)ETipiColonna.String)
+                    {
+                        Appoggio = String.Format("'{0}'",row.ToString());
+                    }
+                    sb.Append(Appoggio);
+                }
+
+            }
+
+            return sb.ToString(); ;
+        }
+
+
+        public DataTable SalvaDatatable() {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE dte = (DTE)GetService(typeof(DTE));
             var objType = ServiceCache.ScriptFactory.GetType();
@@ -302,76 +460,53 @@ namespace TastoDestro
                 var grid = GetNonPublicField(gridContainer, "m_grid") as GridControl;
                 var gridStorage = grid.GridStorage;
                 var schemaTable = GetNonPublicField(gridStorage, "m_schemaTable") as DataTable;
-                
-
+                var NumeroColonneSelezionata = grid.SelectedCells;
+                Microsoft.SqlServer.Management.UI.Grid.SelectionManager selectionManager = (SelectionManager)GetNonPublicField(grid, "m_selMgr");
+                var prova=selectionManager.SelectedBlocks.Capacity;
+             
+                 
                 for (long i = 0; i < gridStorage.NumRows(); i++)
-                {
-                    var rowItems = new List<object>();
-
-                    for (int c = 0; c < schemaTable.Rows.Count; c++)
                     {
-                        var columnName = schemaTable.Rows[c][0].ToString();
-                        var columnType = schemaTable.Rows[c][12] as Type;
+                        var rowItems = new List<object>();
 
-                        if (!data.Columns.Contains(columnName))
+                        for (int c = 0; c < schemaTable.Rows.Count; c++)
                         {
-                            data.Columns.Add(columnName, columnType);
+                            var columnName = schemaTable.Rows[c][0].ToString();
+                            var columnType = schemaTable.Rows[c][12] as Type;
+
+                            if (!data.Columns.Contains(columnName))
+                            {
+                                data.Columns.Add(columnName, columnType);
+                            }
+
+                            var cellData = gridStorage.GetCellDataAsString(i, c + 1);
+
+                            if (cellData == "NULL")
+                            {
+                                rowItems.Add(null);
+
+                                continue;
+                            }
+
+                            if (columnType == typeof(bool))
+                            {
+                                cellData = cellData == "0" ? "False" : "True";
+                            }
+
+                            //Console.WriteLine($"Parsing {columnName} with '{cellData}'");
+                            var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
+
+                            rowItems.Add(typedValue);
                         }
 
-                        var cellData = gridStorage.GetCellDataAsString(i, c + 1);
-
-                        if (cellData == "NULL")
-                        {
-                            rowItems.Add(null);
-
-                            continue;
-                        }
-
-                        if (columnType == typeof(bool))
-                        {
-                            cellData = cellData == "0" ? "False" : "True";
-                        }
-
-                        Console.WriteLine($"Parsing {columnName} with '{cellData}'");
-                        var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
-
-                        rowItems.Add(typedValue);
+                        data.Rows.Add(rowItems.ToArray());
                     }
-
-                    data.Rows.Add(rowItems.ToArray());
-                }
-
+                
                 data.AcceptChanges();
                
-                if (ColonnaSingola)
-                {
-                    
-                    //List<int> IDColonna= new List<int>();
-                    var listaColonne = new List<ColonneDaCopiare>();
-                 
-                   
-                    List<string> NomeColonna = new List<string>();
-                    IDictionary<int, int> numberNames = new Dictionary<int,int>();
-                    int IDColonna = -1;
-                    var NumeroColonneSelezionata=grid.SelectedCells;
-                    for (int i = 0; i < NumeroColonneSelezionata.Count; i++)
-                    {
-                       
-                        IDColonna =(int) GetNonPublicProperties(NumeroColonneSelezionata[i], "LastUpdatedCol");
-                        string NomeColonnaDaAggiungere = data.Columns[IDColonna].ColumnName;
-                        int RigheDaAggiungere= (int)GetNonPublicProperties(NumeroColonneSelezionata[i], "LastUpdatedRow");
-                        if (!NomeColonna.Contains(NomeColonnaDaAggiungere)){
-                            // NomeColonna.Add(string.Format("{0}", data.Columns[IDColonna].ColumnName));
-                            // NomeColonna.Add( data.Columns[IDColonna].ColumnName);
-                            ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(IDColonna,RigheDaAggiungere,NomeColonnaDaAggiungere);
-                            listaColonne.Add(colonneDaCopiare);
-                        }
-                    }
-                    //string NomeColonnaSpalmato = string.Join(",", NomeColonna.ToArray());
-                  // NomeColonnaSpalmato = NomeColonnaSpalmato.Replace(@"""", string.Empty);
-                    data = data.DefaultView.ToTable(false,NomeColonna.ToArray() );
-                }
+             
             }
+           
             return data;
         }
 
@@ -385,17 +520,45 @@ namespace TastoDestro
 
         private void SaveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".xlsx"));
+
+            DataTable dt = SalvaDatatable();
+            if ((dt != null) && (dt.Rows.Count > 0)) { 
+            // var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".xlsx"));
+            var file = new FileInfo(((SaveFileDialog)sender).FileName);
             using (var package = new ExcelPackage(file))
             {
-                ExcelWorksheet ws = package.Workbook.Worksheets.Add("Test");
-                ws.Cells[1, 1].LoadFromDataTable(SalvaDatatable(), true);
-          
-                package.Save();
-                MessageBox.Show("Saved!");
-            }
+                    ExcelWorksheet ws = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "Test");
+                    //If worksheet "Content" was not found, add it
+                    if (ws == null)
+                    {
+                        ws = package.Workbook.Worksheets.Add("Test");
+                    }
 
+                     
+                ws.Cells[1, 1].LoadFromDataTable(dt, true);
+ 
+                    ws.Cells[string.Format("A1:{0}1",GetColumnName(dt.Columns.Count))].AutoFilter = true;
+                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count))].Style.Fill.PatternType= ExcelFillStyle.Solid;
+                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count))].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                    package.Save();
+                //MessageBox.Show("Excel correttamente Salvato");
+            }
+           }
         }
+        static string GetColumnName(int index)
+        {
+            const string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+            var value = "";
+
+            if (index >= letters.Length)
+                value += letters[index / letters.Length - 1];
+
+            value += letters[index % letters.Length];
+
+            return value;
+        }
+
 
         public object GetNonPublicField(object obj, string field)
         {
