@@ -168,11 +168,11 @@ namespace TastoDestro
             CommandBarPopup commandBarPopup1 = (CommandBarPopup)sqlQueryGridPane.Controls.Add(MsoControlType.msoControlPopup, Missing.Value, Missing.Value, Missing.Value, true);
             CommandBarControl cmdBarControl2 = commandBarPopup1.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, Missing.Value, true);
             CommandBarControl cmdBarControlCopiaFormattata = sqlQueryGridPane.Controls.Add(MsoControlType.msoControlButton, Missing.Value, Missing.Value, 4, true);
-            cmdBarControlCopiaFormattata.Caption = "Copia con formattazione";
+            cmdBarControlCopiaFormattata.Caption = "Copia per INSERT";
             var btnCopiaFormattata= (CommandBarButton)cmdBarControlCopiaFormattata;
             btnCopiaFormattata.Visible = true;
             btnCopiaFormattata.Enabled = true;
-            btnCopiaFormattata.Caption = "Copia con formattazione";
+            btnCopiaFormattata.Caption = "Copia per INSERT";
             btnCopiaFormattata.Style= MsoButtonStyle.msoButtonIconAndCaption;
             // btnCopiaFormattata.Picture = IconeMenu.GetIPictureDispFromPicture(IconeMenu.LoadBase64(Properties.Resource1.ICONAEXCEL));
             btnCopiaFormattata.Click += BtnCopiaFormattata_Click;
@@ -327,18 +327,26 @@ namespace TastoDestro
                 List<ColonneDaCopiare> ColonneRighe = new List<ColonneDaCopiare>();
                 for (int indice=0;indice< NumeroColonneSelezionata.Count;indice++)
                 {
-                    ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(((int)GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedCol") - 1), Convert.ToInt32(GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedRow")));
-                    ColonneRighe.Add(colonneDaCopiare);
-                    
-                }
-                if (ColonneRighe.Count == 1)
-                {
-                    for (int idx = (int)selectionManager.CurrentRow; idx < selectionManager.LastUpdatedRow; idx++)
-                    {
-                        ColonneDaCopiare _colonneDaCopiare = new ColonneDaCopiare(selectionManager.CurrentColumn - 1, idx);
-                        ColonneRighe.Add(_colonneDaCopiare);
+                        //ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(((int)GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedCol") - 1), Convert.ToInt32(GetNonPublicProperties(NumeroColonneSelezionata[indice], "LastUpdatedRow")));
+                        for (int jj = (int)NumeroColonneSelezionata[indice].OriginalX; jj <= NumeroColonneSelezionata[indice].Right; jj++)
+                        {
+                            for (int ii =(int) NumeroColonneSelezionata[indice].OriginalY; ii <= NumeroColonneSelezionata[indice].Bottom; ii++)
+                            {
+                                ColonneDaCopiare colonneDaCopiare = new ColonneDaCopiare(jj-1,ii);
+                                ColonneRighe.Add(colonneDaCopiare);
+                            }
+                        }
                     }
-                }
+                ////if (ColonneRighe.Count == 1)
+                ////{
+                //        for (int idc = (int)selectionManager.CurrentColumn; idc < selectionManager.LastUpdatedColumn+1; idc++) { 
+                //    for (int idx = (int)selectionManager.CurrentRow; idx < selectionManager.LastUpdatedRow+1; idx++)
+                //    {
+                //        ColonneDaCopiare _colonneDaCopiare = new ColonneDaCopiare(idc - 1, idx);
+                //        ColonneRighe.Add(_colonneDaCopiare);
+                //    }
+                //        }
+                //    //}
                 string columnName;
                 Type columnType;
                     
@@ -346,7 +354,12 @@ namespace TastoDestro
                 {
                     var rowItems = new List<object>();
                         
-                    if ((i > 0) && (ColonneRighe.Count > 0)&&(ColonneRighe.FindAll(x => x.IDUltimaRiga==i).Count()>0)) { sb.AppendLine(); }
+                    if ((i > 0) && (ColonneRighe.Count > 0)&&(ColonneRighe.FindAll(x => x.IDUltimaRiga==i).Count()>0)) {
+                            if (ColonneRighe.FindAll(x=>x.IDColonna!=x.IDColonna).Count > 1) { 
+                            sb.Remove(sb.Length - 1,1);
+                            }
+
+                            sb.AppendLine(); }
                     for (int c = 0; c < schemaTable.Rows.Count; c++)
                     {
                       var risultato=ColonneRighe.Find(x=>x.IDColonna==c);
@@ -364,28 +377,29 @@ namespace TastoDestro
                                 var result = ColonneRighe.Find(x => x.IDUltimaRiga == i && x.IDColonna==c);
                             if (result!=null)
                             {
-                                var cellData = gridStorage.GetCellDataAsString(i, c + 1);
+                                var cellData = gridStorage.GetCellDataAsString(i, c+1 );
 
                                 //if ((cellData == "NULL")|| (i!=risultato.IDUltimaRiga))
                                 if (cellData == "NULL")
                                 {
                                     rowItems.Add(null);
+                                        sb.Append("NULL,");
                                     inserito = false;
                                     continue;
                                 }
 
-                                if ((columnType == typeof(bool) && (1 == 1)))
-                                {
-                                    cellData = cellData == "0" ? "False" : "True";
-                                }
+                                    if (columnType == typeof(bool) )
+                                    {
+                                        cellData = cellData == "0" ? "False" : "True";
+                                    }
 
-                                Console.WriteLine($"Parsing {columnName} with '{cellData}'");
+                                  // Console.WriteLine($"Parsing {columnName} with '{cellData}'");
 
-                                var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
+                                    var typedValue = Convert.ChangeType(cellData, columnType, CultureInfo.InvariantCulture);
                                 rowItems.Add(typedValue);
                                 if (columnType.Name == "String")
                                 {
-                                    typedValue = String.Format("'{0}',", typedValue);
+                                    typedValue = String.Format("'{0}',", typedValue.ToString().Trim().TrimEnd().TrimStart());
                                 }
                                 if (columnType.Name == "DateTime")
                                 {
@@ -393,10 +407,15 @@ namespace TastoDestro
                                     string sqlFormattedDate = dateTime.HasValue ? dateTime.Value.ToString("yyyy-MM-dd HH:mm:ss"): "<errore>";
                                     typedValue = String.Format("'{0}',",sqlFormattedDate );
                                 }
-                                    if ((columnType.Name == "Byte")||(columnType.Name=="Int32"))
+                                    if ((columnType.Name == "Byte")||(columnType.Name=="Int32") || (columnType.Name == "Double"))
                                     {
                                        
                                         typedValue = String.Format("{0},", typedValue);
+                                    }
+                                    if(columnType.Name == "Boolean")
+                                    {
+                                       var valore=Convert.ToBoolean(typedValue) == false ? "0" : "1";
+                                        typedValue = String.Format("{0},", valore );
                                     }
                                     sb.Append(typedValue);
                                 inserito = true;
@@ -442,7 +461,7 @@ namespace TastoDestro
             return sb.ToString(); ;
         }
 
-
+        //{c6b71c93-b881-3346-bbe2-3635c2fbcd6c}
         public DataTable SalvaDatatable() {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE dte = (DTE)GetService(typeof(DTE));
@@ -454,11 +473,15 @@ namespace TastoDestro
             var SQLResultsControl = field.GetValue(Result);
             var m_gridResultsPage = GetNonPublicField(SQLResultsControl, "m_gridResultsPage");
             CollectionBase gridContainers = GetNonPublicField(m_gridResultsPage, "m_gridContainers") as CollectionBase;
+            var ElementoFocusato = GetNonPublicProperties(m_gridResultsPage, "LastFocusedControl");
+            var tagFocusato = GetNonPublicProperties(ElementoFocusato, "Tag");
             var data = new DataTable();
             foreach (var gridContainer in gridContainers)
             {
                 var grid = GetNonPublicField(gridContainer, "m_grid") as GridControl;
-                var gridStorage = grid.GridStorage;
+                if (grid.Tag==tagFocusato)
+                {
+                    var gridStorage = grid.GridStorage;
                 var schemaTable = GetNonPublicField(gridStorage, "m_schemaTable") as DataTable;
                 var NumeroColonneSelezionata = grid.SelectedCells;
                 Microsoft.SqlServer.Management.UI.Grid.SelectionManager selectionManager = (SelectionManager)GetNonPublicField(grid, "m_selMgr");
@@ -503,8 +526,8 @@ namespace TastoDestro
                     }
                 
                 data.AcceptChanges();
-               
-             
+
+                }
             }
            
             return data;
@@ -520,26 +543,28 @@ namespace TastoDestro
 
         private void SaveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
+            List<int> listaIndexDate = new List<int>();
             DataTable dt = SalvaDatatable();
+            listaIndexDate.AddRange(dt.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(DateTime)).Select(x=>x.Ordinal));
             if ((dt != null) && (dt.Rows.Count > 0)) { 
             // var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Test_" + DateTime.Now.ToString("M-dd-yyyy-HH.mm.ss") + ".xlsx"));
             var file = new FileInfo(((SaveFileDialog)sender).FileName);
             using (var package = new ExcelPackage(file))
             {
                     ExcelWorksheet ws = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "Test");
-                    //If worksheet "Content" was not found, add it
-                    if (ws == null)
-                    {
-                        ws = package.Workbook.Worksheets.Add("Test");
-                    }
+                 
+                    if (ws != null)
+                   {package.Workbook.Worksheets.Delete("Test"); }
+                    ws = package.Workbook.Worksheets.Add("Test");
 
-                     
-                ws.Cells[1, 1].LoadFromDataTable(dt, true);
+                    ws.Cells[1, 1].LoadFromDataTable(dt, true);
  
-                    ws.Cells[string.Format("A1:{0}1",GetColumnName(dt.Columns.Count))].AutoFilter = true;
-                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count))].Style.Fill.PatternType= ExcelFillStyle.Solid;
-                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count))].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                    ws.Cells[string.Format("A1:{0}1",GetColumnName(dt.Columns.Count-1))].AutoFilter = true;
+                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count-1))].Style.Fill.PatternType= ExcelFillStyle.Solid;
+                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count-1))].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                    ws.Cells[string.Format("A1:{0}1", GetColumnName(dt.Columns.Count - 1))].Style.Font.Bold=true;
+                    listaIndexDate.ForEach(x=> ws.Column(x+1).Style.Numberformat.Format = "dd-mm-yyyy");
+                    ws.Cells.AutoFitColumns();
                     package.Save();
                 //MessageBox.Show("Excel correttamente Salvato");
             }
@@ -562,14 +587,14 @@ namespace TastoDestro
 
         public object GetNonPublicField(object obj, string field)
         {
-            FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance );
+            FieldInfo f = obj.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance|BindingFlags.Public );
 
             return f.GetValue(obj);
         }
 
         public object GetNonPublicProperties(object obj, string field)
         {
-            PropertyInfo f = obj.GetType().GetProperty(field, BindingFlags.NonPublic | BindingFlags.Instance);
+            PropertyInfo f = obj.GetType().GetProperty(field, BindingFlags.NonPublic | BindingFlags.Instance|BindingFlags.Public);
 
             return f.GetValue(obj);
         }
