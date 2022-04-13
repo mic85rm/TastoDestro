@@ -142,7 +142,7 @@ namespace TastoDestro
       //string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
       //string title = "Command1";
 
-      string message = "Ti ringrazio per la fiducia!";
+      string message = "Ti ringrazio per la fiducia!Offrimi un caffè";
       string title = "MICHELE SSMS18 TOOLS";
 
       // Show a message box to prove we were here
