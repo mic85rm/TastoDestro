@@ -51,6 +51,12 @@
 					<CommandName>SottoMenu</CommandName>
 				</Strings>
 			</Menu>
+			<Menu guid="guidCommand1PackageCmdSet" id="MyMenuToolbar" priority="0x5000" type="Menu">
+				<Parent guid="guidSHLMainMenu" id="IDG_VS_TOOLSB_NEWWINDOWS"/>
+				<Strings>
+					<ButtonText>Open Recent Files</ButtonText>
+				</Strings>
+			</Menu>
 		</Menus>
 
 		<Groups>
@@ -59,6 +65,9 @@
 			</Group>
 			<Group guid="guidCommand1PackageCmdSet" id="SubMenuGroup" priority="0x0601">
 				<Parent guid="guidCommand1PackageCmdSet" id="SubMenu"/>
+			</Group>
+			<Group guid="guidCommand1PackageCmdSet" id="MyToolbarItemGroup" priority="0x1101">
+				<Parent guid="guidCommand1PackageCmdSet" id="MyMenuToolbar"/>
 			</Group>
 		</Groups>
 
@@ -87,6 +96,12 @@
 					<ButtonText>Traetta</ButtonText>
 				</Strings>
 			</Button>
+			<Button guid="guidCommand1PackageCmdSet" id="cmdidTestSubCommand" priority="0x1100" type="Button">
+				<Parent guid="guidCommand1PackageCmdSet" id="MyToolbarItemGroup"/>
+				<Strings>
+					<ButtonText>Open File...</ButtonText>
+				</Strings>
+			</Button>
 		</Buttons>
 
 		<!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -100,6 +115,9 @@
 		</Bitmaps>
 	</Commands>
 
+
+
+
 	<Symbols>
 		<!-- This is the package guid. -->
 		<!--<GuidSymbol name="guidCommand1Package" value="{2aa4241b-3cd0-49d1-8592-b9c5f593fab1}" />-->
@@ -112,6 +130,8 @@
 			<IDSymbol name="Command2Id" value="0x0100" />
 			<IDSymbol name="SubMenu" value="0x1100"/>
 			<IDSymbol name="SubMenuGroup" value="0x1150"/>
+			<IDSymbol name="MyMenuToolbar" value="0x2010"/>
+			<IDSymbol name="MyToolbarItemGroup" value="0x2020"/>
 			<IDSymbol name="cmdidTestSubCommand" value="0x0105"/>
 		</GuidSymbol>
 
